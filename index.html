@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Converting .sav Files to Excel with Label Replacement Using Python</title>
+    <!-- Link to Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navbar Section -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Data Conversion Tutorial</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#prerequisites">Prerequisites</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#steps">Steps</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#code">Code</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#troubleshooting">Troubleshooting</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <!-- Header Section -->
+        <header class="text-center mb-4">
+            <h1 class="display-4">Converting .sav Files to Excel with Label Replacement Using Python</h1>
+            <p class="lead">In this blog post, I’ll walk you through the process of converting a .sav file (typically used by SPSS) into an Excel file while replacing the numeric values with their respective value labels. This can be especially useful when working with datasets that use coded values, and you want to make the data more understandable and user-friendly.</p>
+        </header>
+
+        <!-- Prerequisites Section -->
+        <section id="prerequisites">
+            <h2 class="h3 text-primary">Prerequisites</h2>
+            <p>Before you begin, you’ll need to install the necessary Python packages. You can do this using <code>pip</code>:</p>
+            <pre><code>pip install pandas pyreadstat openpyxl</code></pre>
+            <ul>
+                <li><code>pandas</code>: A powerful data manipulation library.</li>
+                <li><code>pyreadstat</code>: A library that allows reading .sav files (SPSS data format) and their metadata, including value labels.</li>
+                <li><code>openpyxl</code>: A library for writing Excel files.</li>
+            </ul>
+        </section>
+
+        <!-- Step-by-Step Guide Section -->
+        <section id="steps">
+            <h2 class="h3 text-primary">Step-by-Step Guide to Converting .sav Files to Excel with Labels</h2>
+
+            <h4>Step 1: Import the Libraries</h4>
+            <p>We begin by importing the required libraries.</p>
+            <pre><code>import pandas as pd
+import pyreadstat</code></pre>
+            <p><code>pyreadstat.read_sav()</code> is the function that reads the .sav file and loads both the data and its metadata, including value labels. <code>pandas</code> is used for manipulating and saving the data to an Excel file.</p>
+
+            <h4>Step 2: Load the .sav File</h4>
+            <p>The .sav file is an SPSS data file that contains both the data (numeric or categorical values) and metadata (value labels for categorical variables). We can load it using <code>pyreadstat.read_sav()</code>.</p>
+            <pre><code>df, meta = pyreadstat.read_sav('your_file.sav')</code></pre>
+            <ul>
+                <li><code>df</code> contains the data as a pandas DataFrame.</li>
+                <li><code>meta</code> contains metadata about the variables, including the value labels that correspond to the numeric codes in the data.</li>
+            </ul>
+
+            <h4>Step 3: Replace Numeric Codes with Labels</h4>
+            <p>Many times, .sav files contain numeric codes for categorical variables (for example, 1 might represent "Male" and 2 might represent "Female"). These codes are useful for analysis but not very human-readable.</p>
+            <pre><code>for column in df.columns:
+    if meta.variable_value_labels.get(column):
+        labels = meta.variable_value_labels[column]
+        df[column] = df[column].map(labels).fillna(df[column])</code></pre>
+            <ul>
+                <li><code>meta.variable_value_labels</code> provides a dictionary of value labels for each variable.</li>
+                <li><code>.map(labels)</code> replaces numeric codes in each column with their corresponding label.</li>
+                <li><code>.fillna(df[column])</code> ensures that if any value doesn’t have a label, it will retain its original numeric code.</li>
+            </ul>
+
+            <h4>Step 4: Save the Data to an Excel File</h4>
+            <p>Now that we’ve replaced the numeric codes with labels, we can save the updated DataFrame to an Excel file.</p>
+            <pre><code>df.to_excel('your_output.xlsx', index=False)</code></pre>
+            <p><code>df.to_excel()</code> writes the DataFrame to an Excel file. <code>index=False</code> ensures that pandas doesn’t include the DataFrame index as a separate column in the Excel file.</p>
+
+            <h4>Step 5: Check the Output</h4>
+            <p>After running the script, you should have an Excel file (<code>your_output.xlsx</code>) with the numeric codes replaced by their corresponding value labels.</p>
+        </section>
+
+        <!-- Full Code Section -->
+        <section id="code">
+            <h2 class="h3 text-primary">Full Code</h2>
+            <p>Here’s the complete script:</p>
+            <pre><code>import pandas as pd
+import pyreadstat
+
+# Load the .sav file
+df, meta = pyreadstat.read_sav('your_file.sav')
+
+# Replace numeric codes with labels
+for column in df.columns:
+    if meta.variable_value_labels.get(column):
+        labels = meta.variable_value_labels[column]
+        df[column] = df[column].map(labels).fillna(df[column])
+
+# Save the DataFrame as an Excel file
+df.to_excel('your_output.xlsx', index=False)
+
+print("The .sav file has been successfully converted to Excel with labels.")</code></pre>
+        </section>
+
+        <!-- Troubleshooting Section -->
+        <section id="troubleshooting">
+            <h2 class="h3 text-primary">Troubleshooting</h2>
+            <ul>
+                <li><strong>Missing Labels:</strong> If your .sav file does not have value labels for certain columns, the numeric values will remain unchanged in the output Excel file. Ensure that the original .sav file has value labels defined in SPSS.</li>
+                <li><strong>Data Types:</strong> If some of your variables are not categorical but numeric (such as age or income), they will not have value labels and will remain unchanged.</li>
+                <li><strong>Missing Values:</strong> If there are any missing values in your data (e.g., NA or null), they will not be affected by the .map() method and will retain their original value.</li>
+            </ul>
+        </section>
+
+        <!-- Conclusion Section -->
+        <section>
+            <h2 class="h3 text-primary">Conclusion</h2>
+            <p>Converting .sav files to Excel while replacing numeric codes with human-readable labels is a great way to make your data more accessible and easier to interpret. Using Python, <code>pyreadstat</code>, and <code>pandas</code>, this process becomes automated and efficient.</p>
+            <p>Feel free to adapt the code for your specific dataset and needs. If you encounter any issues, check the metadata for missing labels or consult the documentation for the libraries used.</p>
+        </section>
+
+        <!-- License Section -->
+        <section>
+            <h2 class="h3 text-primary">License</h2>
+            <p>This project is open source and licensed under the <a href="LICENSE" target="_blank">MIT License</a>. Feel free to fork the repository, make improvements, and contribute back.</p>
+        </section>
+    </div>
+
+    <!-- Bootstrap JS and Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+</body>
+</html>
